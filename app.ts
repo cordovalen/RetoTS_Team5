@@ -32,16 +32,34 @@
         url:  string;
     }
     
+    async function  loadCharacters(): Promise<Character[]>{
+        const charactersLS: string | null = localStorage.getItem("charactersAPI");
+        if(charactersLS){
+            console.log("Cargando desde localStorage...")
+            return JSON.parse(charactersLS)
+        }
+        console.log("Cargando desde API...")
+        const url: string = "https://rickandmortyapi.com/api/character";
+        const response: Response = await fetch(url);
+        const characters: Characters = await response.json();
+        localStorage.setItem("charactersAPI", JSON.stringify(characters.results));
+        return characters.results
+    }
     
-    const url: string = "https://rickandmortyapi.com/api/character";
-    const response: Response = await fetch(url);
-    const characters: Characters = await response.json();
-    characters.results.map(item => {
-        console.log(item);
-    })
+    async function saveCharacter(character: Character): Promise<void>{
+        const listCharacters: Character[] = await loadCharacters();
+        listCharacters.push(character);
+        localStorage.setItem("charactersAPI", JSON.stringify(listCharacters));
+    }
     
-    const newCharacter: Character = new Character(122, "Pepito El Magnifico", "Hada", "Strong");
+    console.log("Personajes iniciales:");
+    console.table(await loadCharacters());
     
-    console.log(newCharacter);
+    console.log("Personajes a agregar: ");
+    const newCharacter: Character = new Character(122, "El Magnifico", "Hada", "Strong");
+    console.table(newCharacter);
     
+    await saveCharacter(newCharacter);
+    console.log("Nueva lista:");
+    console.table(await loadCharacters());
     })()
